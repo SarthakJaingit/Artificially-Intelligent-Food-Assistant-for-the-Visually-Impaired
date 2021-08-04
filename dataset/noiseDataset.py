@@ -2,7 +2,7 @@
 OPTIONAL: This is the class construct for a test file our paper used
 to guage how the model did on not predicting anything on random images.
 
-It is not needed to run construct entire pipeline
+It is not needed to run and construct entire pipeline
 '''
 
 import glob
