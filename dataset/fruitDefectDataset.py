@@ -18,6 +18,10 @@ from PIL import Image
 import numpy as np
 from xml.etree import ElementTree
 
+'''This is the classids for creating the FruitDataset'''
+
+classes = ["Placeholder", "Apples", "Strawberry", "Peach", "Tomato", "Bad_Spots"]
+
 '''
 Input:
 image_id: "image.jpeg"
