@@ -15,3 +15,5 @@ Requirements:
 * Link to notebook to show how pipeline works like training and dataset works.
 
 ## Write code for a way to infer on images using weight files in device and then explian how to use that code in the READme
+
+## Write how the train code is just there for reference and can't really be used maybe in the train readme. Also say what the dataset .py scripts do and mention how to build own train scripts around them.  
