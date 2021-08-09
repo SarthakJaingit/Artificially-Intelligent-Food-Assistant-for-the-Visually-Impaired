@@ -11,3 +11,5 @@ Requirements:
 * Read me on how to run inference script with params and can attach image or mp4. 
 * all the dataset and train .py scripts with comments. 
 * requirements.txt
+* Add Readme to each folder
+* Link to notebook to show how pipeline works like training and dataset works.

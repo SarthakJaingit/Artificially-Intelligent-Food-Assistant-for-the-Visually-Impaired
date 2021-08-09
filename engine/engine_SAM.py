@@ -17,7 +17,7 @@ For the bottom imports you must git clone the following repo in order to build t
 !cp references/detection/coco_eval.py ../
 !cp references/detection/coco_utils.py ../
 
-%cd /root
+%cd ..
 '''
 
 from coco_utils import get_coco_api_from_dataset
