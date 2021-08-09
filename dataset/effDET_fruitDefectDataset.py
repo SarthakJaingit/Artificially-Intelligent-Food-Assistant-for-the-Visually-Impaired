@@ -15,12 +15,12 @@ https://github.com/rwightman/efficientdet-pytorch
 '''
 
 def Coco_Create(labels_dict_fn,bounding_box_dict_fn,imgs_key_fn):
-  Coco_dict={}
-  images_full_list=[]
-  annotations_full_list = []
-  bbox_id=0
+    Coco_dict={}
+    images_full_list=[]
+    annotations_full_list = []
+    bbox_id=0
 
-  for index in range(len(bounding_box_dict_fn)):
+    for index in range(len(bounding_box_dict_fn)):
 
         sub_annotation_dict={}
 
@@ -71,7 +71,7 @@ def Coco_Create(labels_dict_fn,bounding_box_dict_fn,imgs_key_fn):
             ann_nest_dict['category_id'] = labels[i]+1
             annotations_full_list.append(ann_nest_dict)
 
-  Coco_dict['info'] = {
+    Coco_dict['info'] = {
           "year": "",
           "version": "",
           "description": "",
@@ -79,10 +79,10 @@ def Coco_Create(labels_dict_fn,bounding_box_dict_fn,imgs_key_fn):
           "url": "",
           "date_created": ""
       }
-  Coco_dict['licenses'] = []
-  Coco_dict['annotations'] = annotations_full_list
-  Coco_dict['images'] = images_full_list
-  categories= [{ "id" : 1,
+    Coco_dict['licenses'] = []
+    Coco_dict['annotations'] = annotations_full_list
+    Coco_dict['images'] = images_full_list
+    categories= [{ "id" : 1,
               "name" : 'Apples',
               "supercategory" : 'Fruit'},
               {"id" : 2,
@@ -106,5 +106,5 @@ def Coco_Create(labels_dict_fn,bounding_box_dict_fn,imgs_key_fn):
                {"id" : 8,
               "name" : 'Peaches_Bad_Spot',
               "supercategory" : 'Fruit'}]
-  Coco_dict['categories'] = categories
-  return Coco_dict
+    Coco_dict['categories'] = categories
+    return Coco_dict
