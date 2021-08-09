@@ -13,3 +13,5 @@ Requirements:
 * requirements.txt
 * Add Readme to each folder
 * Link to notebook to show how pipeline works like training and dataset works.
+
+## Write code for a way to infer on images using weight files in device and then explian how to use that code in the READme
