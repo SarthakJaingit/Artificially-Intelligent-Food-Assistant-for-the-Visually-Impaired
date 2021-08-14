@@ -1,11 +1,17 @@
 import argparse
 import torch
 import torchvision
+from torchvision.transforms import functional as F
 import numpy as np
 import os
 import time
 import torch.nn.parallel
 from contextlib import suppress
+from non_max_suppression import calculate_iou_on_label
+from interface import develop_voice_over
+from efficientdet_processing import simple_iou_thresh, transforms_coco_eval
+import cv2
+import matplotlib.pyplot as plt
 
 from effdet import create_model
 from effdet.data import resolve_input_config
@@ -30,10 +36,53 @@ except AttributeError:
 
 classes = ["Placeholder", "Apples", "Strawberry", "Peach", "Tomato", "Bad_Spots"]
 
+''' Setting model device'''
 def set_device(input_device):
     global device
     device = torch.device(input_device)
     print("Device: {}".format(input_device))
+
+'''Intializing Model State Dicts'''
+def create_effdet():
+
+    args['num_classes'] = len(classes) - 1
+    args['pretrained'] = True
+    args['checkpoint'] = "device/effecientdet_d0/effecientdet_d0_brain.pth.tar"
+    args['redundant_bias'] = None
+    args['model'] = efficientdet_d0
+    args['soft_nms'] = None
+    args['use_ema'] = True
+    args['img_size'] = 512
+    args['torchscript'] = True
+
+
+    args['pretrained'] = args['pretrained'] or not args['checkpoint']  # might as well try to validate something
+
+    # create model
+    with set_layer_config(scriptable=args['torchscript']):
+        extra_args = dict(image_size=(args['img_size'] ,args['img_size']))
+        bench = create_model(
+            args['model'],
+            bench_task='predict',
+            num_classes=args['num_classes'],
+            pretrained=args['pretrained'],
+            redundant_bias=args['redundant_bias'],
+            soft_nms=args['soft_nms'],
+            checkpoint_path=args['checkpoint'],
+            checkpoint_ema=args['use_ema'],
+            **extra_args,
+        )
+
+    model_config = bench.config
+    input_config = resolve_input_config(args, model_config)
+
+    param_count = sum([m.numel() for m in bench.parameters()])
+    print('Model %s created, param count: %d' % (args['model'], param_count))
+    bench = bench.to(device)
+    amp_autocast = suppress
+    bench.eval()
+
+    return bench, amp_autocast
 
 def load_torchvision_models(model_name):
     if model_name == "ssdlite_mobilenet":
@@ -51,6 +100,30 @@ def load_torchvision_models(model_name):
         print("Loaded model weights for mobilenet_fasterrcnn")
 
         return mobilenet_fasterrcnn
+
+'''Inference functions for all models'''
+def infer_effdet(bench, frame, amp_autocast, nms_thresh):
+
+    #Preprocessing steps for every frame
+    transformed_frame, img_scale = transforms_coco_eval(frame, 512)
+    with amp_autocast():
+        output = bench(transformed_frame)[0]
+    final_out = list()
+    for ii, pred in enumerate(output):
+        #Nonmax Suppression
+        if pred[-2] > nms_thresh:
+            final_out.append(pred)
+        else:
+            break
+    if len(final_out) != 0:
+        final_out = torch.stack(final_out)
+        if len(final_out) > 1:
+             #Nonmax Suppression
+             final_out = simple_iou_thresh(final_out, 0.2)
+    else:
+        final_out = []
+
+    return final_out, img_scale
 
 
 def infer_image(image_file_path, trained_model, distance_thresh, iou_thresh, voice_over):
@@ -109,11 +182,11 @@ def infer_image(image_file_path, trained_model, distance_thresh, iou_thresh, voi
         else:
             results[0][key] = torch.cat((fruit_results[key], bad_spot_results[key]), dim = 0)
 
-    if show_image:
-        if device == torch.device("cuda"):
-            torch_image = torch_image.cpu()
-        written_image = cv2.cvtColor(draw_boxes(results[0]["boxes"], results[0]["labels"], torch_image.squeeze(), infer = True, put_text= True), cv2.COLOR_BGR2RGB)
-        plt.imshow(written_image)
+    # if show_image:
+    #     if device == torch.device("cuda"):
+    #         torch_image = torch_image.cpu()
+    #     written_image = cv2.cvtColor(draw_boxes(results[0]["boxes"], results[0]["labels"], torch_image.squeeze(), infer = True, put_text= True), cv2.COLOR_BGR2RGB)
+    #     plt.imshow(written_image)
 
     if voice_over:
         voice_over = develop_voice_over(results, classes)
@@ -140,9 +213,12 @@ if __name__ == "__main__":
     else:
         voice_over = False
 
+    pil_image = Image.open(args.image_file).convert("RGB")
+
     if args.model_name == "efficientdet_d0":
-        results = stuff
-        # Change this
+        model, amp_autocast = create_effdet()
+        # Should plt plot image with bbox and accept parser args.
+        infer_effdet(model, pil_image, amp_autocast, args.nms_thresh)
     elif args.model_name == "mobilenet_fasterrcnn" or args.model_name = "ssdlite_mobilenet":
         model = load_torchvision_models(args.model_name)
     else:
