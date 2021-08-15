@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from Image import PIL
+from PIL import Image
 from non_max_suppression import jaccard_iou
 
 

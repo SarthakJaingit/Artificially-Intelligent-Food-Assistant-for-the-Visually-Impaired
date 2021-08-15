@@ -1,5 +1,6 @@
 import argparse
 import torch
+# pip install --upgrade torchvision (Run this after installing torch)
 import torchvision
 from torchvision.transforms import functional as F
 import numpy as np
@@ -16,7 +17,6 @@ import matplotlib.pyplot as plt
 from effdet import create_model
 from effdet.data import resolve_input_config
 from timm.models.layers import set_layer_config
-from tqdm import tqdm
 from PIL import Image
 
 has_apex = False
@@ -35,6 +35,7 @@ except AttributeError:
 
 
 classes = ["Placeholder", "Apples", "Strawberry", "Peach", "Tomato", "Bad_Spots"]
+COLORS = [(0, 0, 0), (0, 255, 0), (0, 0 , 255), (255, 255, 0), (255, 0, 0)]
 
 ''' Setting model device'''
 def set_device(input_device):
@@ -102,12 +103,12 @@ def load_torchvision_models(model_name):
         return mobilenet_fasterrcnn
 
 '''Inference functions for all models'''
-def infer_effdet(bench, frame, amp_autocast, nms_thresh):
+def infer_effdet(model, frame, amp_autocast, nms_thresh):
 
     #Preprocessing steps for every frame
     transformed_frame, img_scale = transforms_coco_eval(frame, 512)
     with amp_autocast():
-        output = bench(transformed_frame)[0]
+        output = model(transformed_frame)[0]
     final_out = list()
     for ii, pred in enumerate(output):
         #Nonmax Suppression
@@ -118,18 +119,18 @@ def infer_effdet(bench, frame, amp_autocast, nms_thresh):
     if len(final_out) != 0:
         final_out = torch.stack(final_out)
         if len(final_out) > 1:
-             #Nonmax Suppression
              final_out = simple_iou_thresh(final_out, 0.2)
     else:
         final_out = []
 
+    # numpy_frame = np.array(frame)
     return final_out, img_scale
 
 
-def infer_image(image_file_path, trained_model, distance_thresh, iou_thresh, voice_over):
+def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over):
 
 
-    torch_image = F.to_tensor(Image.open(image_file_path).convert("RGB")).unsqueeze(0).to(device)
+    torch_image = F.to_tensor(image).unsqueeze(0).to(device)
     trained_model.to(device)
     trained_model.eval()
     print("Image Size: {}".format(torch_image.size()))
@@ -182,17 +183,33 @@ def infer_image(image_file_path, trained_model, distance_thresh, iou_thresh, voi
         else:
             results[0][key] = torch.cat((fruit_results[key], bad_spot_results[key]), dim = 0)
 
-    # if show_image:
-    #     if device == torch.device("cuda"):
-    #         torch_image = torch_image.cpu()
-    #     written_image = cv2.cvtColor(draw_boxes(results[0]["boxes"], results[0]["labels"], torch_image.squeeze(), infer = True, put_text= True), cv2.COLOR_BGR2RGB)
-    #     plt.imshow(written_image)
+    if device == torch.device("cuda"):
+        torch_image = torch_image.cpu()
+
+    np_image = torch_image.squeeze().permute(1, 2, 0).numpy()
+    written_image = draw_boxes(results[0]["boxes"], results[0]["labels"], np_image, put_text= True)
+    plt.imshow(written_image)
 
     if voice_over:
         voice_over = develop_voice_over(results, classes)
         print(voice_over)
 
-    return results
+
+def draw_boxes(boxes, labels, image, put_text = True):
+
+    for i, box in enumerate(boxes):
+        color = COLORS[labels[i] % len(COLORS)]
+        cv2.rectangle(
+            image,
+            (int(box[0]), int(box[1])),
+            (int(box[2]), int(box[3])),
+            color, 2
+        )
+        if put_text:
+          cv2.putText(image, classes[labels[i]], (int(box[0]), int(box[1]-5)),
+                      cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2,
+                      lineType=cv2.LINE_AA)
+    return image
 
 if __name__ == "__main__":
 
@@ -219,7 +236,8 @@ if __name__ == "__main__":
         model, amp_autocast = create_effdet()
         # Should plt plot image with bbox and accept parser args.
         infer_effdet(model, pil_image, amp_autocast, args.nms_thresh)
-    elif args.model_name == "mobilenet_fasterrcnn" or args.model_name = "ssdlite_mobilenet":
+    elif args.model_name == "mobilenet_fasterrcnn" or args.model_name == "ssdlite_mobilenet":
         model = load_torchvision_models(args.model_name)
+        infer_image(pil_image, model, args.confidence_thresh, args.iou_thresh, args.voice_over)
     else:
         raise ValueError("model_name can only be [efficientdet_d0, mobilenet_fasterrcnn, ssdlite_mobilenet]")
