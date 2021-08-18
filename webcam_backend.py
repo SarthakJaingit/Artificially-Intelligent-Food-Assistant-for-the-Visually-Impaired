@@ -3,8 +3,8 @@ import html
 import io
 import time
 
+from inference_device import load_torchvision_models
 from IPython.display import display, Javascript
-from google.colab.output import eval_js
 import numpy as np
 from PIL import Image
 import cv2
@@ -145,8 +145,41 @@ def take_photo(label, img_data):
   data = eval_js('takePhoto("{}", "{}")'.format(label, img_data))
   return data
 
+def js_reply_to_image(js_reply):
+    """
+    input:
+          js_reply: JavaScript object, contain image from webcam
 
-if __name__ == "__main__":
+    output:
+          image_array: image array RGB size 512 x 512 from webcam
+    """
+    jpeg_bytes = base64.b64decode(js_reply['img'].split(',')[1])
+    image_PIL = Image.open(io.BytesIO(jpeg_bytes))
+    image_array = np.array(image_PIL)
+
+    return image_array
+
+def drawing_array_to_bytes(drawing_array):
+    """
+    input:
+          drawing_array: image RGBA size 512 x 512
+                              contain bounding box and text from yolo prediction,
+                              channel A value = 255 if the pixel contains drawing properties (lines, text)
+                              else channel A value = 0
+
+    output:
+          drawing_bytes: string, encoded from drawing_array
+    """
+
+    drawing_PIL = Image.fromarray(drawing_array, 'RGBA')
+    iobuf = io.BytesIO()
+    drawing_PIL.save(iobuf, format='png')
+    drawing_bytes = 'data:image/png;base64,{}'.format((str(base64.b64encode(iobuf.getvalue()), 'utf-8')))
+    return drawing_bytes
+
+def run_this():
+
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
     start_input()
     label_html = 'Capturing...'
     img_data = ''
@@ -155,6 +188,9 @@ if __name__ == "__main__":
     color=None
     label=None
     line_thickness=None
+    model = load_torchvision_models("mobilenet_fasterrcnn")
+
+
     while True:
         js_reply = take_photo(label_html, img_data)
         if not js_reply:

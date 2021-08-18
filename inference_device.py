@@ -89,18 +89,18 @@ def load_torchvision_models(model_name):
     if model_name == "ssdlite_mobilenet":
         ssd_lite = torchvision.models.detection.ssdlite320_mobilenet_v3_large(pretrained_backbone=True, num_classes = len(classes))
         ssd_lite.load_state_dict(torch.load("device/ssdlite_mobilenet/ssdlite_mobilenet_brain.pth"))
-        print("Loaded model weights for ssdlite_mobilenet")
+        print("Loaded model weights for ssdlite_mobilenet turning to eval mode")
 
-        return ssd_lite
+        return ssd_lite.eval()
     else:
         mobilenet_fasterrcnn = torchvision.models.detection.fasterrcnn_mobilenet_v3_large_320_fpn(pretrained=True)
         mobilenet_fasterrcnn.roi_heads.box_predictor.cls_score.out_features = len(classes)
         mobilenet_fasterrcnn.roi_heads.box_predictor.bbox_pred.out_features = 4 * (len(classes))
 
         mobilenet_fasterrcnn.load_state_dict(torch.load("device/mobilenet_fasterrcnn/mobilenet_fasterrcnn_brain.pth"))
-        print("Loaded model weights for mobilenet_fasterrcnn")
+        print("Loaded model weights for mobilenet_fasterrcnn turning to eval model")
 
-        return mobilenet_fasterrcnn
+        return mobilenet_fasterrcnn.eval()
 
 '''Inference functions for all models'''
 def infer_effdet(model, frame, amp_autocast, nms_thresh):
