@@ -2,6 +2,7 @@ import base64
 import html
 import io
 import time
+import torch
 
 from inference_device import load_torchvision_models
 from IPython.display import display, Javascript
