@@ -189,7 +189,7 @@ def run_this():
     color=None
     label=None
     line_thickness=None
-    model = load_torchvision_models("mobilenet_fasterrcnn")
+    model = load_torchvision_models("mobilenet_fasterrcnn", device)
 
 
     while True:
