@@ -142,10 +142,6 @@ def start_input():
 
   display(js)
 
-def take_photo(label, img_data):
-  data = eval_js('takePhoto("{}", "{}")'.format(label, img_data))
-  return data
-
 def js_reply_to_image(js_reply):
     """
     input:
@@ -177,22 +173,3 @@ def drawing_array_to_bytes(drawing_array):
     drawing_PIL.save(iobuf, format='png')
     drawing_bytes = 'data:image/png;base64,{}'.format((str(base64.b64encode(iobuf.getvalue()), 'utf-8')))
     return drawing_bytes
-
-def run_this():
-
-    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    start_input()
-    label_html = 'Capturing...'
-    img_data = ''
-    count = 0
-
-    color=None
-    label=None
-    line_thickness=None
-    model = load_torchvision_models("mobilenet_fasterrcnn", device)
-
-
-    while True:
-        js_reply = take_photo(label_html, img_data)
-        if not js_reply:
-            break
