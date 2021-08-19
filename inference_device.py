@@ -85,10 +85,10 @@ def create_effdet():
 
     return bench, amp_autocast
 
-def load_torchvision_models(model_name):
+def load_torchvision_models(model_name, map_loc):
     if model_name == "ssdlite_mobilenet":
         ssd_lite = torchvision.models.detection.ssdlite320_mobilenet_v3_large(pretrained_backbone=True, num_classes = len(classes))
-        ssd_lite.load_state_dict(torch.load("device/ssdlite_mobilenet/ssdlite_mobilenet_brain.pth"))
+        ssd_lite.load_state_dict(torch.load("device/ssdlite_mobilenet/ssdlite_mobilenet_brain.pth", map_location=map_loc))
         print("Loaded model weights for ssdlite_mobilenet turning to eval mode")
 
         return ssd_lite.eval()
@@ -97,7 +97,7 @@ def load_torchvision_models(model_name):
         mobilenet_fasterrcnn.roi_heads.box_predictor.cls_score.out_features = len(classes)
         mobilenet_fasterrcnn.roi_heads.box_predictor.bbox_pred.out_features = 4 * (len(classes))
 
-        mobilenet_fasterrcnn.load_state_dict(torch.load("device/mobilenet_fasterrcnn/mobilenet_fasterrcnn_brain.pth"))
+        mobilenet_fasterrcnn.load_state_dict(torch.load("device/mobilenet_fasterrcnn/mobilenet_fasterrcnn_brain.pth", map_location = map_loc))
         print("Loaded model weights for mobilenet_fasterrcnn turning to eval model")
 
         return mobilenet_fasterrcnn.eval()
@@ -237,7 +237,7 @@ if __name__ == "__main__":
         # Should plt plot image with bbox and accept parser args.
         infer_effdet(model, pil_image, amp_autocast, args.nms_thresh)
     elif args.model_name == "mobilenet_fasterrcnn" or args.model_name == "ssdlite_mobilenet":
-        model = load_torchvision_models(args.model_name)
+        model = load_torchvision_models(args.model_name, device)
         infer_image(pil_image, model, args.confidence_thresh, args.iou_thresh, args.voice_over)
     else:
         raise ValueError("model_name can only be [efficientdet_d0, mobilenet_fasterrcnn, ssdlite_mobilenet]")
