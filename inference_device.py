@@ -8,11 +8,10 @@ import os
 import time
 import torch.nn.parallel
 from contextlib import suppress
-from non_max_suppression import calculate_iou_on_label
+from non_max_suppression import calculate_iou_on_label, get_labels_categ
 from interface import develop_voice_over
 from efficientdet_processing import simple_iou_thresh, transforms_coco_eval
 import cv2
-import matplotlib.pyplot as plt
 
 from effdet import create_model
 from effdet.data import resolve_input_config
@@ -129,7 +128,6 @@ def infer_effdet(model, frame, amp_autocast, nms_thresh):
 
 def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over):
 
-
     torch_image = F.to_tensor(image).unsqueeze(0).to(device)
     trained_model.to(device)
     trained_model.eval()
@@ -186,16 +184,19 @@ def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over):
     if device == torch.device("cuda"):
         torch_image = torch_image.cpu()
 
-    np_image = torch_image.squeeze().permute(1, 2, 0).numpy()
-    written_image = draw_boxes(results[0]["boxes"], results[0]["labels"], np_image, put_text= True)
-    plt.imshow(written_image)
+    written_image = draw_boxes(results[0]["boxes"], results[0]["labels"], torch_image.squeeze(), put_text= True)
 
+    cv2.imshow('Output', written_image)
     if voice_over:
         voice_over = develop_voice_over(results, classes)
         print(voice_over)
 
+    cv2.waitKey(0)
+
 
 def draw_boxes(boxes, labels, image, put_text = True):
+    image = image.permute(1, 2, 0).numpy()
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     for i, box in enumerate(boxes):
         color = COLORS[labels[i] % len(COLORS)]
@@ -219,16 +220,10 @@ if __name__ == "__main__":
     parser.add_argument("--model_name", dest = "model_name", required = True, help = "name of models: [efficientdet_d0, mobilenet_fasterrcnn, ssdlite_mobilenet]")
     parser.add_argument("--confidence_thresh", dest = "confidence_thresh", required = True, help = "value for confidence thresholding \
     in nms")
-    parser.add_argument("--iou_thresh", dest = "iou_thresh", required = True, help = "value of iou thresh in nms")
-    parser.add_argument("--voice_over", dest = "voice_over", required = False, help = "choice to include user interface. Default is False")
+    parser.add_argument("--voice_over", dest = "voice_over", default = False, action='store_true', help = "choice to include user interface. Default is False")
     args = parser.parse_args()
 
     set_device(args.device)
-
-    if args.voice_over:
-        voice_over = args.voice_over
-    else:
-        voice_over = False
 
     pil_image = Image.open(args.image_file).convert("RGB")
 
@@ -238,6 +233,6 @@ if __name__ == "__main__":
         infer_effdet(model, pil_image, amp_autocast, args.nms_thresh)
     elif args.model_name == "mobilenet_fasterrcnn" or args.model_name == "ssdlite_mobilenet":
         model = load_torchvision_models(args.model_name, device)
-        infer_image(pil_image, model, args.confidence_thresh, args.iou_thresh, args.voice_over)
+        infer_image(pil_image, model, float(args.confidence_thresh), [0.35, 0.1], args.voice_over)
     else:
         raise ValueError("model_name can only be [efficientdet_d0, mobilenet_fasterrcnn, ssdlite_mobilenet]")
