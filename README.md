@@ -12,7 +12,7 @@ Requirements:
 * all the dataset and train .py scripts with comments. 
 * requirements.txt
 * Add Readme to each folder
-* Link to notebook to show how pipeline works like training and dataset works.
+* Link to webcam and stuff
 
 * Move dataset and engine and train to another folder called references and then have the inference files that can be used and played with outside. To form inference script use the inference functions asnd then for ssd lite and mob net they should be same and then for efficientdet you can create it. Add parse arger for choosing images. Then for references add a readme that explains the thing below.
 
