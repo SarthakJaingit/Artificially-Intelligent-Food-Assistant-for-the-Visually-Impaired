@@ -126,7 +126,7 @@ def infer_effdet(model, frame, amp_autocast, nms_thresh):
     return final_out, img_scale
 
 
-def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over, webcam = False):
+def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over):
 
     torch_image = F.to_tensor(image).unsqueeze(0).to(device)
     trained_model.to(device)
@@ -180,10 +180,7 @@ def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over, w
             results[0]["boxes"] = torch.cat((fruit_results["boxes"], bad_spot_results["boxes"]), axis = 0)
         else:
             results[0][key] = torch.cat((fruit_results[key], bad_spot_results[key]), dim = 0)
-
-    if webcam:
-        return results
-
+            
     if device == torch.device("cuda"):
         torch_image = torch_image.cpu()
 

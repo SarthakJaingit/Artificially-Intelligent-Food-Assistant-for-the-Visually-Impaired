@@ -9,6 +9,7 @@ from IPython.display import display, Javascript
 import numpy as np
 from PIL import Image
 import cv2
+from torchvision.transforms import functional as F
 
 def start_input():
   js = Javascript('''
@@ -173,3 +174,32 @@ def drawing_array_to_bytes(drawing_array):
     drawing_PIL.save(iobuf, format='png')
     drawing_bytes = 'data:image/png;base64,{}'.format((str(base64.b64encode(iobuf.getvalue()), 'utf-8')))
     return drawing_bytes
+
+def webcam_infer_image(image, trained_model, distance_thresh, device):
+
+    torch_image = F.to_tensor(image).unsqueeze(0).to(device)
+    trained_model.to(device)
+    trained_model.eval()
+    print("Image Size: {}".format(torch_image.size()))
+
+    start_time = time.time()
+    results = trained_model(torch_image)
+    end_time = time.time() - start_time
+
+    print("Time of Inference {:0.2f}".format(end_time))
+
+    valid_box_count = 0
+    for ii, score in enumerate(results[0]["scores"]):
+        if score < distance_thresh:
+          low_index_start = ii
+          break
+        else:
+          valid_box_count += 1
+
+    if valid_box_count == len(results[0]["scores"]):
+        low_index_start = len(results[0]["scores"])
+
+    for key in results[0]:
+        results[0][key] = results[0][key][:low_index_start]
+
+    return results
