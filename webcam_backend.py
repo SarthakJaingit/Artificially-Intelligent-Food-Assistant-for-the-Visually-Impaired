@@ -180,13 +180,10 @@ def webcam_infer_image(image, trained_model, distance_thresh, device):
     torch_image = F.to_tensor(image).unsqueeze(0).to(device)
     trained_model.to(device)
     trained_model.eval()
-    print("Image Size: {}".format(torch_image.size()))
 
     start_time = time.time()
     results = trained_model(torch_image)
     end_time = time.time() - start_time
-
-    print("Time of Inference {:0.2f}".format(end_time))
 
     valid_box_count = 0
     for ii, score in enumerate(results[0]["scores"]):
