@@ -202,7 +202,7 @@ def webcam_infer_image(image, trained_model, distance_thresh, iou_thresh, device
 
 
 
-
+    classes = ["Placeholder", "Apples", "Strawberry", "Peach", "Tomato", "Bad_Spots"]
     #This is where I place the order of the list
     fruit_spot_iou_thresh, bad_spot_iou_thresh = iou_thresh
 
