@@ -199,4 +199,35 @@ def webcam_infer_image(image, trained_model, distance_thresh, device):
     for key in results[0]:
         results[0][key] = results[0][key][:low_index_start]
 
+
+        
+
+    #This is where I place the order of the list
+    fruit_spot_iou_thresh, bad_spot_iou_thresh = iou_thresh
+
+    #Update when I get more data of fruits and when running for script beware of classes.
+    bad_spot_index = [ii for ii, label in enumerate(results[0]["labels"]) if label in get_labels_categ(classes, "bad_spot")]
+    fruit_index = [ii for ii, _ in enumerate(results[0]["labels"]) if ii not in bad_spot_index]
+
+    bad_spot_results, fruit_results = dict(), dict()
+
+    for key in results[0]:
+        bad_spot_results[key], fruit_results[key] = results[0][key][[bad_spot_index]], results[0][key][[fruit_index]]
+
+    assert len(bad_spot_results["boxes"]) == len(bad_spot_results["scores"]) == len(bad_spot_results["labels"])
+    assert len(fruit_results["boxes"]) == len(fruit_results["scores"]) == len(fruit_results["labels"])
+
+    len_of_bad_spots, len_of_fruit = len(bad_spot_results["boxes"]), len(fruit_results["boxes"])
+
+    if len_of_bad_spots > 1:
+        bad_spot_results = calculate_iou_on_label(bad_spot_results, len_of_bad_spots, bad_spot_iou_thresh, device)
+    if len_of_fruit > 1:
+        fruit_results = calculate_iou_on_label(fruit_results, len_of_fruit, fruit_spot_iou_thresh, device)
+
+    for key in results[0]:
+        if (key == "boxes"):
+            results[0]["boxes"] = torch.cat((fruit_results["boxes"], bad_spot_results["boxes"]), axis = 0)
+        else:
+            results[0][key] = torch.cat((fruit_results[key], bad_spot_results[key]), dim = 0)
+
     return results
