@@ -176,7 +176,7 @@ def drawing_array_to_bytes(drawing_array):
     drawing_bytes = 'data:image/png;base64,{}'.format((str(base64.b64encode(iobuf.getvalue()), 'utf-8')))
     return drawing_bytes
 
-def webcam_infer_image(image, trained_model, distance_thresh, device):
+def webcam_infer_image(image, trained_model, distance_thresh, iou_thresh, device):
 
     torch_image = F.to_tensor(image).unsqueeze(0).to(device)
     trained_model.to(device)
