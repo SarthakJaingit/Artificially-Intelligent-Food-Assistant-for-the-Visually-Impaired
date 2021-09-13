@@ -200,13 +200,9 @@ def webcam_infer_image(image, trained_model, distance_thresh, iou_thresh, device
     for key in results[0]:
         results[0][key] = results[0][key][:low_index_start]
 
-
-
     classes = ["Placeholder", "Apples", "Strawberry", "Peach", "Tomato", "Bad_Spots"]
-    #This is where I place the order of the list
     fruit_spot_iou_thresh, bad_spot_iou_thresh = iou_thresh
 
-    #Update when I get more data of fruits and when running for script beware of classes.
     bad_spot_index = [ii for ii, label in enumerate(results[0]["labels"]) if label in get_labels_categ(classes, "bad_spot")]
     fruit_index = [ii for ii, _ in enumerate(results[0]["labels"]) if ii not in bad_spot_index]
 
