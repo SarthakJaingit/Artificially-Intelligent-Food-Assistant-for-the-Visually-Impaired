@@ -10,6 +10,7 @@ import numpy as np
 from PIL import Image
 import cv2
 from torchvision.transforms import functional as F
+from non_max_suppression import calculate_iou_on_label, get_labels_categ
 
 def start_input():
   js = Javascript('''
@@ -200,7 +201,7 @@ def webcam_infer_image(image, trained_model, distance_thresh, device):
         results[0][key] = results[0][key][:low_index_start]
 
 
-        
+
 
     #This is where I place the order of the list
     fruit_spot_iou_thresh, bad_spot_iou_thresh = iou_thresh
