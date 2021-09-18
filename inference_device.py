@@ -34,6 +34,8 @@ except AttributeError:
 
 
 classes = ["Placeholder", "Apples", "Strawberry", "Peach", "Tomato", "Bad_Spots"]
+# effdet_classes = ["Apples", "Strawberry", "Peach", "Tomato", "Apple_Bad_Spot",
+#                   "Strawberry_Bad_Spot", "Tomato_Bad_Spot", "Peaches_Bad_Spot"]
 COLORS = [(0, 0, 0), (0, 255, 0), (0, 0 , 255), (255, 255, 0), (255, 0, 0)]
 
 ''' Setting model device'''
@@ -45,39 +47,40 @@ def set_device(input_device):
 '''Intializing Model State Dicts'''
 def create_effdet():
 
-    args['num_classes'] = len(classes) - 1
-    args['pretrained'] = True
-    args['checkpoint'] = "device/effecientdet_d0/effecientdet_d0_brain.pth.tar"
-    args['redundant_bias'] = None
-    args['model'] = efficientdet_d0
-    args['soft_nms'] = None
-    args['use_ema'] = True
-    args['img_size'] = 512
-    args['torchscript'] = True
+    model_args = dict()
+    model_args['num_classes'] = 8
+    model_args['pretrained'] = True
+    model_args['checkpoint'] = "device/effecientdet_d0/effecientdet_d0_brain.pth.tar"
+    model_args['redundant_bias'] = None
+    model_args['model'] = 'efficientdet_d0'
+    model_args['soft_nms'] = None
+    model_args['use_ema'] = True
+    model_args['img_size'] = 512
+    model_args['torchscript'] = True
 
 
-    args['pretrained'] = args['pretrained'] or not args['checkpoint']  # might as well try to validate something
+    model_args['pretrained'] = model_args['pretrained'] or not model_args['checkpoint']  # might as well try to validate something
 
     # create model
-    with set_layer_config(scriptable=args['torchscript']):
-        extra_args = dict(image_size=(args['img_size'] ,args['img_size']))
+    with set_layer_config(scriptable=model_args['torchscript']):
+        extra_args = dict(image_size=(model_args['img_size'] ,model_args['img_size']))
         bench = create_model(
-            args['model'],
+            model_args['model'],
             bench_task='predict',
-            num_classes=args['num_classes'],
-            pretrained=args['pretrained'],
-            redundant_bias=args['redundant_bias'],
-            soft_nms=args['soft_nms'],
-            checkpoint_path=args['checkpoint'],
-            checkpoint_ema=args['use_ema'],
+            num_classes=model_args['num_classes'],
+            pretrained=model_args['pretrained'],
+            redundant_bias=model_args['redundant_bias'],
+            soft_nms=model_args['soft_nms'],
+            checkpoint_path=model_args['checkpoint'],
+            checkpoint_ema=model_args['use_ema'],
             **extra_args,
         )
 
     model_config = bench.config
-    input_config = resolve_input_config(args, model_config)
+    input_config = resolve_input_config(model_args, model_config)
 
     param_count = sum([m.numel() for m in bench.parameters()])
-    print('Model %s created, param count: %d' % (args['model'], param_count))
+    print('Model %s created, param count: %d' % (model_args['model'], param_count))
     bench = bench.to(device)
     amp_autocast = suppress
     bench.eval()
@@ -102,16 +105,16 @@ def load_torchvision_models(model_name, map_loc):
         return mobilenet_fasterrcnn.eval()
 
 '''Inference functions for all models'''
-def infer_effdet(model, frame, amp_autocast, nms_thresh):
+def infer_effdet(model, frame, amp_autocast, nms_thresh, voice_over):
 
     #Preprocessing steps for every frame
-    transformed_frame, img_scale = transforms_coco_eval(frame, 512)
+    transformed_frame, img_scale = transforms_coco_eval(frame, device, 512)
     with amp_autocast():
         output = model(transformed_frame)[0]
     final_out = list()
     for ii, pred in enumerate(output):
         #Nonmax Suppression
-        if pred[-2] > nms_thresh:
+        if pred[-2] > float(nms_thresh):
             final_out.append(pred)
         else:
             break
@@ -122,8 +125,24 @@ def infer_effdet(model, frame, amp_autocast, nms_thresh):
     else:
         final_out = []
 
-    # numpy_frame = np.array(frame)
-    return final_out, img_scale
+    torch_image = F.to_tensor(frame)
+    for ii, out in enumerate(final_out[:, -1]):
+        if final_out[:, -1][ii] > 4:
+            final_out[:, -1][ii] = 5.0
+    written_image = draw_boxes(final_out[:, :4] * img_scale, final_out[:, -1].to(torch.uint8), torch_image, put_text= True)
+
+    cv2.imshow('Output', written_image)
+    # Fix or remove voice over
+    if voice_over:
+        results = [{
+        "boxes" : final_out[:, :4] * img_scale,
+        "labels": final_out[:, -1].to(torch.uint8),
+        "scores": final_out[:, -2]
+        }]
+        print(results)
+        voice_over = develop_voice_over(results, classes)
+        print(voice_over)
+    cv2.waitKey(0)
 
 
 def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over):
@@ -180,7 +199,7 @@ def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over):
             results[0]["boxes"] = torch.cat((fruit_results["boxes"], bad_spot_results["boxes"]), axis = 0)
         else:
             results[0][key] = torch.cat((fruit_results[key], bad_spot_results[key]), dim = 0)
-            
+
     if device == torch.device("cuda"):
         torch_image = torch_image.cpu()
 
@@ -229,8 +248,7 @@ if __name__ == "__main__":
 
     if args.model_name == "efficientdet_d0":
         model, amp_autocast = create_effdet()
-        # Should plt plot image with bbox and accept parser args.
-        infer_effdet(model, pil_image, amp_autocast, args.nms_thresh)
+        infer_effdet(model, pil_image, amp_autocast, args.confidence_thresh, args.voice_over)
     elif args.model_name == "mobilenet_fasterrcnn" or args.model_name == "ssdlite_mobilenet":
         model = load_torchvision_models(args.model_name, device)
         infer_image(pil_image, model, float(args.confidence_thresh), [0.35, 0.1], args.voice_over)

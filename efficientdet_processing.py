@@ -93,6 +93,7 @@ def resolve_fill_color(fill_color, img_mean=IMAGENET_DEFAULT_MEAN):
 
 def transforms_coco_eval(
         img,
+        device, 
         img_size=512,
         interpolation='bilinear',
         use_prefetcher=False,
