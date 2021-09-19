@@ -25,6 +25,7 @@ def find_order_of_fruits(model_out, label2index):
       fruit_indices.extend(value)
 
   fruit_bboxes = model_out[0]["boxes"][fruit_indices]
+
   if len(fruit_bboxes) > 4:
     return None, ("Too Many fruits in view to give a descriptive analysis")
 
@@ -36,8 +37,8 @@ def find_order_of_fruits(model_out, label2index):
     if torch.sum(iou > 0.8):
       return None, ("Fruits are too close together to analyze. Please spread them out")
     else:
-      ii2xmin[ii] = bbox[0]
-      ii2ymin[ii] = bbox[1]
+      ii2xmin[fruit_indices[ii]] = bbox[0]
+      ii2ymin[fruit_indices[ii]] = bbox[1]
 
   hor, vert = list(ii2xmin.values()), list(ii2ymin.values())
   hor, vert = torch.stack(hor).detach().cpu().numpy(), torch.stack(vert).detach().cpu().numpy()
@@ -65,7 +66,7 @@ def find_bad_spot_pix_percent(model_out, fruit_order, orientation, classes):
     if area > fruit_area:
       area = fruit_area
 
-    spoiled_percentages.append(int((area / fruit_area * 100)))
+    spoiled_percentages.append(round(float((area / fruit_area * 100)), 1))
 
   voice_over = str()
 

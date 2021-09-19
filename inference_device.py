@@ -34,8 +34,6 @@ except AttributeError:
 
 
 classes = ["Placeholder", "Apples", "Strawberry", "Peach", "Tomato", "Bad_Spots"]
-# effdet_classes = ["Apples", "Strawberry", "Peach", "Tomato", "Apple_Bad_Spot",
-#                   "Strawberry_Bad_Spot", "Tomato_Bad_Spot", "Peaches_Bad_Spot"]
 COLORS = [(0, 0, 0), (0, 255, 0), (0, 0 , 255), (255, 255, 0), (255, 0, 0)]
 
 ''' Setting model device'''
@@ -132,18 +130,15 @@ def infer_effdet(model, frame, amp_autocast, nms_thresh, voice_over):
     written_image = draw_boxes(final_out[:, :4] * img_scale, final_out[:, -1].to(torch.uint8), torch_image, put_text= True)
 
     cv2.imshow('Output', written_image)
-    # Fix or remove voice over
     if voice_over:
         results = [{
         "boxes" : final_out[:, :4] * img_scale,
         "labels": final_out[:, -1].to(torch.uint8),
         "scores": final_out[:, -2]
         }]
-        print(results)
         voice_over = develop_voice_over(results, classes)
         print(voice_over)
     cv2.waitKey(0)
-
 
 def infer_image(image, trained_model, distance_thresh, iou_thresh, voice_over):
 
