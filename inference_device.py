@@ -46,7 +46,7 @@ def set_device(input_device):
 def create_effdet():
 
     model_args = dict()
-    model_args['num_classes'] = 8
+    model_args['num_classes'] = len(classes) - 1
     model_args['pretrained'] = True
     model_args['checkpoint'] = "device/effecientdet_d0/effecientdet_d0_brain.pth.tar"
     model_args['redundant_bias'] = None
@@ -124,9 +124,6 @@ def infer_effdet(model, frame, amp_autocast, nms_thresh, voice_over):
         final_out = []
 
     torch_image = F.to_tensor(frame)
-    for ii, out in enumerate(final_out[:, -1]):
-        if final_out[:, -1][ii] > 4:
-            final_out[:, -1][ii] = 5.0
     written_image = draw_boxes(final_out[:, :4] * img_scale, final_out[:, -1].to(torch.uint8), torch_image, put_text= True)
 
     cv2.imshow('Output', written_image)
