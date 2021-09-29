@@ -116,6 +116,9 @@ def develop_voice_over(model_out, classes):
     return None
 
   label2index = get_label2index(model_out, classes)
+  if len(label2index) == 1 and list(label2index.keys())[0] == 5:
+      return "Only Bad Spots detected, please readjust camera or possibly accept None"
+
   fruit_order, orientation = find_order_of_fruits(model_out, label2index)
 
   if not fruit_order:
