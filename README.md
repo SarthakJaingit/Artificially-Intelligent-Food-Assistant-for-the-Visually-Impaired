@@ -1,15 +1,24 @@
-# Visually-Impaired-Food-Device-Aid-
+# Artificially Intelligent Food Assistant for the Visually Impaired
+
+Our system is an interface which utilizes many advancements in Artificial Intelligence to make visual evaluations of a variety of both fresh and packaged food for the visually impaired.
+
+## Dependencies
+
+
+
+
+
 Add a Readme file explaining the the food aid project
 Update Token
 
 (Provide Google Collab link to very easy to use collab file)
 
-In root have train.py file 
+In root have train.py file
 
-Requirements: 
+Requirements:
 * Working inference script where user can plug in model weights and get output
-* Read me on how to run inference script with params and can attach image or mp4. 
-* all the dataset and train .py scripts with comments. 
+* Read me on how to run inference script with params and can attach image or mp4.
+* all the dataset and train .py scripts with comments.
 * requirements.txt
 * Add Readme to each folder
 * Link to webcam and stuff
