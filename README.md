@@ -13,6 +13,17 @@ Once you have a package manager, It is suggested to just run the inference scrip
 you have an ImportError: No module named ..., then you install the package using your package manager.\
 **For anaconda, every package other than the effdet package was installed through anaconda. Install the effdet package using PyPI over [here](https://pypi.org/project/effdet/)**
 
+You can install install packages by running:
+```
+>> conda install [library]
+```
+It is recommended to first try downloading the package as shown above. If the shell tells you the package does not exist then download the package from the conda forge channel as shown below
+```
+>> conda install -c conda-forge [library]
+```
+You can find more about anaconda by looking at their [documentation](https://docs.anaconda.com/)
+
+
 
 
 
