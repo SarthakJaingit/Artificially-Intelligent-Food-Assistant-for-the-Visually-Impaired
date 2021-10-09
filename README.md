@@ -4,6 +4,16 @@ Our system is an interface which utilizes many advancements in Artificial Intell
 
 ## Dependencies
 
+You will first need to install the anaconda package manager.\
+You can follow the instructions by clicking the [Anaconda Installing Guide](https://docs.anaconda.com/anaconda/install/index.html)\
+Optionally, You can follow [Miniconda Installing Guide](https://docs.conda.io/en/latest/miniconda.html)\
+Any other package manager will work only if it can install all the packages in our requirements files
+
+Once you have a package manager, It is suggested to just run the inference scripts as delineated by the instructions below, and whenever
+you have an ImportError: No module named ..., then you install the package using your package manager.\
+**For anaconda, every package other than the effdet package was installed through anaconda. Install the effdet package using PyPI over [here](https://pypi.org/project/effdet/)**
+
+
 
 
 
