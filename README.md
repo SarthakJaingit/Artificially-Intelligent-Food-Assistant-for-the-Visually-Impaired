@@ -69,3 +69,7 @@ To run this, just follow the simple steps outlined below (Note: You won't need a
  * Click on the tab that says Upload and upload your file that you git cloned into your local computer
  * Then, you will see two cells with a play button on each.
  * You will press both play buttons one after another in order. When you reach the last play button **you will see a webcam application that utilizes our software**.
+
+## OCR Application
+The OCR application is harder to run as the main purpose was to show a workable system only.
+However, after the git cloning the repo, if you follow the comments on the **OCR_application.ipynb** file and open it on Google Colab (instructions on how to do that in the webcam demo) while also referring and getting access to the [Google Cloud Vision API](https://cloud.google.com/vision) and [CaloriesNinja API](https://calorieninjas.com/api), then you will be able to run the notebook functionality on your own. 
