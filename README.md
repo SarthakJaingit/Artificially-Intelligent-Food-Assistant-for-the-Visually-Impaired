@@ -14,10 +14,12 @@ you have an ImportError: No module named ..., then you install the package using
 **For anaconda, every package other than the effdet package was installed through anaconda. Install the effdet package using PyPI over [here](https://pypi.org/project/effdet/)**
 
 You can install install packages by running:
-```>> conda install [library]
+```
+>> conda install [library]
 ```
 It is recommended to first try downloading the package as shown above. If the shell tells you the package does not exist then download the package from the conda forge channel as shown below
-```>> conda install -c conda-forge [library]
+```
+>> conda install -c conda-forge [library]
 ```
 You can find more about anaconda by looking at their [documentation](https://docs.anaconda.com/)
 
@@ -32,7 +34,8 @@ If you download by zip file, make sure to uncompress the zip to see the actual c
 
 After git cloning this repo and installing all packages with anaconda, you will have the ability to run our programs into your shell.\
 Please refer to the following example implementation and docs
-```>> python3 inference_device.py apple-5265125_1280.jpg  --device cpu --model_name mobilenet_fasterrcnn --confidence_thresh 0.2 --voice_over
+```
+>> python3 inference_device.py apple-5265125_1280.jpg  --device cpu --model_name mobilenet_fasterrcnn --confidence_thresh 0.2 --voice_over
 ```
 If you run ```python3 inference_device.py -h``` you will see the helping guide which will aid you to understand what each argument means (as shown below).
 ```
