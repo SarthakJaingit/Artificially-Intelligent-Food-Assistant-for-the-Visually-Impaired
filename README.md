@@ -66,10 +66,10 @@ After git cloning the repo you will have access to the file **Try_This_Detection
 To run this, just follow the simple steps outlined below (Note: You won't need any coding experience to run this):
  * Type Google Colab in your search engine
  * Once you open the first link, you will see a box that allows you the chance to create a new notebook, upload, along with other choices
- * Click on the tab that says Upload and upload your file that you git cloned into your local computer
- * Then, you will see two cells with a play button on each.
- * You will press both play buttons one after another in order. When you reach the last play button **you will see a webcam application that utilizes our software**.
+ * Click on the tab that says Upload and upload your **Try_This_Detection_Demo.ipynb** file that you git cloned into your local computer
+ * Then once it is finished uploading, you will see two cells with a play button on the left of each.
+ * You will press both play buttons one after another in order. When you reach and press the last play button that has the code ```run_this()```**you will be able to use our webcam application that utilizes our software**.
 
 ## OCR Application
 The OCR application is harder to run as the main purpose was to show a workable system only.
-However, after the git cloning the repo, if you follow the comments on the **OCR_application.ipynb** file and open it on Google Colab (instructions on how to do that in the webcam demo) while also referring and getting access to the [Google Cloud Vision API](https://cloud.google.com/vision) and [CaloriesNinja API](https://calorieninjas.com/api), then you will be able to run the notebook functionality on your own. 
+However, after the git cloning the repo, if you follow the comments on the **OCR_application.ipynb** file and open it on Google Colab (instructions on how to do that in the webcam demo) while also referring and getting access to the [Google Cloud Vision API](https://cloud.google.com/vision) and [CaloriesNinja API](https://calorieninjas.com/api), then you will be able to run the notebook functionality on your own.
